@@ -1,16 +1,18 @@
-# Oracle_Node — Module 17 v1
+# Token Depot Oracle Node Open-Core
 
-Local tenant-bound Oracle Node dashboard for the Compliance Wallet / Compliance Node stack.
+Local tenant-bound Oracle Node dashboard for Token Depot tenant operations.
+
+Oracle Node is free to download, inspect, run, and adapt under the MIT License. It does not grant access to Token Depot-hosted AWS infrastructure. Hosted Token Depot tenant access requires a valid tenant registration and server-side authorization.
 
 ## What this is
 
-This is a local ON operator dashboard. It is intentionally narrow:
+This is a local Oracle Node operator dashboard. It is intentionally narrow:
 
 - validates by `tenant_id` + `on_registration_id`
 - displays exactly one bound tenant
 - displays only users whose `tenant_id` matches the bound tenant
 - allows `RELOAD USERS`
-- allows tenant-scoped freeze/unfreeze only
+- allows tenant-scoped freeze/unfreeze through ON-safe CN endpoints
 - supports tenant/user JSON and CSV export
 - shows local health/status/audit
 
@@ -23,21 +25,11 @@ This is a local ON operator dashboard. It is intentionally narrow:
 - not a tenant creation tool
 - not a tenant reassignment/absorb tool
 - not a website editor
+- not a grant of access to Token Depot AWS infrastructure
 
-## Install on Mac or ON computer
-
-The intended repo root is:
-
-```bash
-~/Projects/Oracle_Node
-```
-
-Unzip the delivered bundle and copy the `Oracle_Node` folder there.
+## Install
 
 ```bash
-mkdir -p ~/Projects
-cp -R Oracle_Node ~/Projects/Oracle_Node
-cd ~/Projects/Oracle_Node
 npm run verify
 npm start
 ```
@@ -56,59 +48,41 @@ HOST=127.0.0.1 PORT=8090 npm start
 
 ## Configure binding
 
-You can edit `data/on-config.v1.json` directly or use the dashboard config form.
+Edit `data/on-config.v1.json` directly or use the dashboard config form.
 
 Required fields:
 
 ```json
 {
   "version": 1,
-  "tenant_id": "TEN_99c98c4b0aaa5283",
-  "on_registration_id": "PASTE_THE_CN_TENANT_ON_REGISTRATION_ID",
-  "cn_base_url": "https://admin-or-cn-host.example.com",
-  "cw_base_url": "https://tokens.ncsolarelectric.com",
+  "tenant_id": "PASTE_AUTHORIZED_TENANT_ID",
+  "on_registration_id": "PASTE_AUTHORIZED_ON_REGISTRATION_ID",
+  "cn_base_url": "https://authorized-cn-host.example.com",
+  "cw_base_url": "https://authorized-wallet-host.example.com",
   "display_name": null,
   "last_validated_at": null
 }
 ```
 
-The ON registration ID must already be stored in the CN Tenant Registry for the bound tenant.
+The ON registration ID must already be stored and authorized by the tenant's Compliance Node. This public repo does not provide Token Depot AWS credentials or bypass hosted tenant authorization.
 
-## CN requirement
-
-Current `Compliance_Node_60.zip` does not contain ON-safe tenant endpoints yet. Apply the companion patch included in this bundle:
-
-```text
-Compliance_Node_M17_ON_Endpoints_companion/Compliance_Node_60_M17_ON_Endpoints.patch
-```
-
-The patch adds only:
-
-```text
-POST /api/cn/on/tenant-snapshot
-POST /api/cn/on/user-freeze
-POST /api/cn/on/user-unfreeze
-```
-
-ON does not use `TD_ADMIN_TOKEN`. CN uses its server-side `TD_ADMIN_TOKEN` only to proxy the existing CW admin list/freeze/unfreeze calls after validating `tenant_id + on_registration_id`.
-
-## NGINX note
-
-If your CN host is behind Basic Auth for the broker UI, you may need an NGINX exception for `/api/cn/on/` so the ON computer can reach the ON-safe endpoints. Keep `/api/cn/users`, `/api/cn/tenants`, and other admin endpoints protected.
+## Security boundary
 
 See:
 
 ```text
-Compliance_Node_M17_ON_Endpoints_companion/nginx_on_api_location_example.conf
+SECURITY.md
+CONFIGURATION.md
+AWS_ACCESS_BOUNDARY.md
 ```
 
 ## Test flow
 
-1. Confirm CN tenant has:
-   - `status = active`
+1. Confirm your authorized CN tenant has:
+   - active tenant status
    - `tenant_id`
    - `on_registration_id`
-2. Start Oracle_Node.
+2. Start Oracle Node.
 3. Save local config.
 4. Click `RELOAD USERS`.
 5. Confirm Tenant Registry shows one tenant only.

@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Oracle Node — Tenant Dashboard</title>
+  <link rel="icon" href="/static/icon/logo.png">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="stylesheet" href="/static/css/on.css">
+</head>
+<body>
+  <main class="container on-shell">
+    <nav class="topnav on-topnav" aria-label="Oracle Node">
+      <ul>
+        <li>
+          <a href="/" aria-label="Oracle Node Dashboard">
+            <img src="/static/icon/logo.png" alt="Token Depot logo">
+          </a>
+        </li>
+      </ul>
+      <ul class="on-top-links">
+        <li><span>Oracle Node</span></li>
+        <li><span>Tenant Dashboard</span></li>
+        <li><span>No Wallet Custody</span></li>
+      </ul>
+    </nav>
+
+    <article class="card on-card" id="statusCard">
+      <header>
+        <h3>Status</h3>
+      </header>
+
+      <div class="on-status-grid">
+        <section class="on-status-panel">
+          <h4>Health</h4>
+          <p id="statusHealthText" class="on-status-value on-ok">Loading...</p>
+          <p id="statusHealthMeta" class="muted small">Waiting for local status.</p>
+          <button id="btnRefreshHealth" class="secondary" type="button">Check Health</button>
+        </section>
+
+        <section class="on-status-panel">
+          <h4>Binding Snapshot</h4>
+          <dl class="on-kv on-kv-compact">
+            <div>
+              <dt>Version</dt>
+              <dd id="statusVersion">—</dd>
+            </div>
+            <div>
+              <dt>Bound Tenant</dt>
+              <dd id="statusBoundTenant">—</dd>
+            </div>
+            <div>
+              <dt>Cached Users</dt>
+              <dd id="statusCachedUserCount">—</dd>
+            </div>
+            <div>
+              <dt>Cache Updated</dt>
+              <dd id="statusCacheUpdatedAt">—</dd>
+            </div>
+          </dl>
+        </section>
+      </div>
+    </article>
+
+    <article class="card on-card" id="bindingCard">
+      <header>
+        <h3>ON Status / Binding</h3>
+      </header>
+
+      <p id="statusText" class="muted">Loading...</p>
+
+      <dl class="on-kv on-binding-kv">
+        <div>
+          <dt>Tenant ID</dt>
+          <dd id="bindingTenantId">—</dd>
+        </div>
+        <div class="on-secret-kv">
+          <dt>ON Registration ID</dt>
+          <dd>
+            <span id="bindingOnRegistrationIdDisplay">—</span>
+            <span class="on-secret-actions">
+              <button id="btnToggleBindingOnRegistrationId" class="secondary on-mini-button" type="button">Show</button>
+              <button id="btnCopyBindingOnRegistrationId" class="secondary on-mini-button" type="button">Copy</button>
+            </span>
+          </dd>
+        </div>
+        <div>
+          <dt>CN Base URL</dt>
+          <dd id="bindingCnBaseUrl" class="mono">—</dd>
+        </div>
+        <div>
+          <dt>CW Base URL</dt>
+          <dd id="bindingCwBaseUrl" class="mono">—</dd>
+        </div>
+      </dl>
+
+      <div class="toolbar on-toolbar">
+        <button id="btnReloadUsers" class="secondary" type="button">Reload Users</button>
+        <span id="pageMsg" class="muted">idle</span>
+      </div>
+    </article>
+
+    <article class="card on-card">
+      <header>
+        <h3>Tenant Registry</h3>
+      </header>
+
+      <p class="muted">Read-only tenant view for the bound tenant. CN remains the tenant authority.</p>
+
+      <dl class="on-kv on-tenant-kv">
+        <div>
+          <dt>Tenant ID</dt>
+          <dd id="tenantId">—</dd>
+        </div>
+        <div>
+          <dt>Tenant Slug</dt>
+          <dd id="tenantSlug">—</dd>
+        </div>
+        <div>
+          <dt>Display Name</dt>
+          <dd id="tenantDisplayName">—</dd>
+        </div>
+        <div>
+          <dt>Status</dt>
+          <dd id="tenantStatus">—</dd>
+        </div>
+        <div>
+          <dt>Primary Domain</dt>
+          <dd id="tenantPrimaryDomain">—</dd>
+        </div>
+        <div>
+          <dt>Branding ID</dt>
+          <dd id="tenantBrandingId">—</dd>
+        </div>
+        <div class="on-edit-kv">
+          <dt>Signup Email</dt>
+          <dd>
+            <label class="on-inline-label" for="tenantSignupEmailInput">Tenant notification email</label>
+            <input id="tenantSignupEmailInput" type="email" autocomplete="email" placeholder="tenant@example.com">
+          </dd>
+        </div>
+        <div class="on-secret-kv">
+          <dt>ON Registration ID</dt>
+          <dd>
+            <span id="tenantOnRegistrationIdDisplay">—</span>
+            <span class="on-secret-actions">
+              <button id="btnToggleTenantOnRegistrationId" class="secondary on-mini-button" type="button">Show</button>
+              <button id="btnCopyTenantOnRegistrationId" class="secondary on-mini-button" type="button">Copy</button>
+            </span>
+          </dd>
+        </div>
+      </dl>
+
+      <div class="toolbar on-toolbar">
+        <button id="btnSaveSignupEmail" class="secondary" type="button">Save Signup Email</button>
+        <button id="btnExportTenantJson" class="secondary" type="button">Export Tenant JSON</button>
+        <span id="tenantMsg" class="muted">tenant details ready</span>
+      </div>
+    </article>
+
+    <article class="card on-card">
+      <header>
+        <h3>Selected User</h3>
+      </header>
+
+      <p class="muted">Tenant operator controls are limited to freeze/unfreeze for users belonging to the bound tenant.</p>
+
+      <section class="on-selected-summary">
+        <dl class="on-kv on-user-kv">
+          <div>
+            <dt>User ID</dt>
+            <dd id="selectedUserId">—</dd>
+          </div>
+          <div>
+            <dt>Label</dt>
+            <dd id="selectedUserLabel">—</dd>
+          </div>
+          <div>
+            <dt>Email</dt>
+            <dd id="selectedUserEmail">—</dd>
+          </div>
+          <div>
+            <dt>Tenant ID</dt>
+            <dd id="selectedUserTenantId">—</dd>
+          </div>
+          <div>
+            <dt>Status</dt>
+            <dd id="selectedUserFrozen">—</dd>
+          </div>
+          <div>
+            <dt>Freeze Updated</dt>
+            <dd id="selectedUserFreezeUpdated">—</dd>
+          </div>
+          <div>
+            <dt>Current Freeze Reason</dt>
+            <dd id="selectedUserFreezeReason">—</dd>
+          </div>
+          <div>
+            <dt>Current Freeze Notes</dt>
+            <dd id="selectedUserFreezeNotes">—</dd>
+          </div>
+        </dl>
+      </section>
+
+      <div class="on-action-grid">
+        <label>
+          Freeze Reason
+          <input id="freezeReason" type="text" autocomplete="off" placeholder="Reason required for freeze">
+        </label>
+        <label>
+          Freeze Notes
+          <textarea id="freezeNote" rows="3" placeholder="Optional compliance note"></textarea>
+        </label>
+        <label class="on-action-wide">
+          Unfreeze Resolution Note
+          <textarea id="resolutionNote" rows="3" placeholder="Optional resolution note when clearing the freeze"></textarea>
+        </label>
+      </div>
+
+      <div class="toolbar on-toolbar">
+        <button id="btnFreezeSelected" class="secondary" type="button">Freeze Selected</button>
+        <button id="btnUnfreezeSelected" class="secondary" type="button">Unfreeze Selected</button>
+        <span id="selectedUserActionText" class="muted">no user selected</span>
+      </div>
+    </article>
+
+    <article class="card on-card">
+      <header>
+        <h3>All Users</h3>
+      </header>
+
+      <p class="muted">Only users returned by CN for the bound tenant are displayed. Any mismatched row is refused client-side.</p>
+
+      <div class="toolbar on-toolbar">
+        <button id="btnExportUsersCsv" class="secondary" type="button">Export Visible Users CSV</button>
+        <button id="btnExportUsersJson" class="secondary" type="button">Export Visible Users JSON</button>
+        <span id="usersCount" class="muted">0 users</span>
+      </div>
+
+      <div class="on-table-wrap">
+        <table class="on-data-table on-users-table">
+          <thead>
+            <tr>
+              <th>Status</th>
+              <th>Action</th>
+              <th>Label</th>
+              <th>User ID</th>
+              <th>Tenant</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Updated</th>
+              <th>Reason</th>
+            </tr>
+          </thead>
+          <tbody id="usersRows"></tbody>
+        </table>
+      </div>
+    </article>
+
+    <article class="card on-card">
+      <header>
+        <h3>Audit</h3>
+      </header>
+
+      <p class="muted">Recent ON operator actions and sync results.</p>
+
+      <div class="toolbar on-toolbar">
+        <button id="btnRefreshAudit" class="secondary" type="button">Refresh Audit</button>
+        <button id="btnClearAuditView" class="secondary" type="button">Clear View</button>
+        <span id="auditCount" class="muted">0 events</span>
+      </div>
+
+      <div class="on-table-wrap">
+        <table class="on-data-table on-audit-table">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Event</th>
+              <th>Result</th>
+              <th>Details</th>
+            </tr>
+          </thead>
+          <tbody id="auditRows"></tbody>
+        </table>
+      </div>
+    </article>
+
+    <footer class="on-footer">
+      <div>
+        <div class="on-footer-title">TOKEN DEPOT CORP.</div>
+        <div>Statesville, NC 28625</div>
+        <div>Contact Us: <a href="tel:+17046037347">(704) 603-7347</a></div>
+      </div>
+
+      <div class="on-footer-right">
+        <div>© <span id="td-footer-year">2026</span> Token Depot Corp. All rights reserved.</div>
+        <div class="on-footer-sub">Secure digital asset operations • Compliance-first workflows</div>
+      </div>
+
+      <script>
+        (function () {
+          var el = document.getElementById("td-footer-year");
+          if (el) el.textContent = String(new Date().getFullYear());
+        })();
+      </script>
+    </footer>
+  </main>
+
+  <script src="/static/js/on-users-ui.js"></script>
+</body>
+</html>

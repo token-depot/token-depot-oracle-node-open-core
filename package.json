@@ -1,0 +1,12 @@
+{
+  "name": "token-depot-oracle-node-open-core",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Token Depot Oracle Node open-core local tenant dashboard",
+  "scripts": {
+    "start": "node server/src/server.js",
+    "verify": "node scripts/verify.mjs"
+  },
+  "dependencies": {}
+}
